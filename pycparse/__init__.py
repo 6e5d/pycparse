@@ -1,8 +1,6 @@
 from importer import importer
 importer("../../pyctok/pyctok", __file__)
-from pyctok import Tokenizer
-
-from .parse import parse
+importer("../../pylrparser/pylrparser", __file__)
 
 def strip_preprocess(lines):
 	lines2 = []
@@ -12,9 +10,3 @@ def strip_preprocess(lines):
 			continue
 		lines2.append(line)
 	return lines2
-
-def parse_string(s):
-	tok = Tokenizer()
-	tok.tokenize(s)
-	j = parse(tok.toks)
-	return j

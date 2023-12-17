@@ -1,28 +1,82 @@
 [
+[S
+	[+ defun]
+]
+[defun
+	[defun declare procedure]
+]
+[dparams
+	[dparams. declare]
+	[dparams declare "," dparams]
+]
+[declare
+	[declare var dbody]
+]
+[dbody
+	[+ dbody2]
+	[ptr "Deref" dbody2]
+]
+[dbody2
+	[+ dbody3]
+	[fun dbody3 "(" dparams ")"]
+]
+[dbody3
+	[+ var]
+	[paren "(" dbody ")"]
+]
+[procedure
+	[begin "{" stmts "}"]
+]
+[stmts
+	[stmts. stmt]
+	[stmts stmt stmts]
+]
+[stmt
+	[+ expr ";"]
+]
+[expr
+	[+ expr14]
+]
+[expr14
+	[+ expr12]
+	[assign expr14 "Assign" expr12]
+]
+[expr12
+	[+ expr4]
+]
 [expr4
-	[litident]
-	[expr2]
-	[expr3]
-	[expr4]
-	[expr4 "32 +" expr3]
-	[expr4 "32 -" expr3]
+	[+ expr3]
+	[add expr4 "Add" expr3]
 ]
 [expr3
-	[litident]
-	[expr2]
-	[expr3 "32 *" expr2]
-	[expr3 "32 /" expr2]
-	[expr3 "32 %" expr2]
+	[+ expr2]
+	[mul expr3 "Mul" expr2]
 ]
 [expr2
-	[litident]
-	["31 +" expr2]
-	["31 -" expr2]
+	[+ expr1]
+	[prefix expr2 "Prefix" expr1]
 ]
-[litident
-	[lit]
-	[ident]
+[expr1
+	[+ lit]
+	[paren "(" expr ")"]
+	[index expr1 "[" expr "]"]
+	[call expr1 "(" params ")"]
+	[member expr1 "Member" var]
 ]
-[lit ["11"] ["12"] ["13"]]
-[ident ["21"]]
+[params
+	[params. expr]
+	[params expr "," params]
+]
+[lit
+	[+ clit]
+	[+ var]
+]
+[clit
+	[. "Num"]
+	[str "Str"]
+	[char "Char"]
+]
+[var
+	[. "Var"]
+]
 ]
