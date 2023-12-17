@@ -5,7 +5,7 @@ if len(sys.argv) >= 2:
 	lines = [line for line in open(sys.argv[1])]
 	lines = strip_preprocess(lines)
 	s = "\n".join(lines)
-	print(parse_string(s))
+	parse_string(s)
 else:
 	s = "int (*(*p(int))(int a, int b))(int (*a)(int x, int y), int b) {}"
-	print(parse_string(s))
+	parse_string(s)

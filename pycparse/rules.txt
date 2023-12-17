@@ -1,0 +1,28 @@
+[
+[expr4
+	[litident]
+	[expr2]
+	[expr3]
+	[expr4]
+	[expr4 "32 +" expr3]
+	[expr4 "32 -" expr3]
+]
+[expr3
+	[litident]
+	[expr2]
+	[expr3 "32 *" expr2]
+	[expr3 "32 /" expr2]
+	[expr3 "32 %" expr2]
+]
+[expr2
+	[litident]
+	["31 +" expr2]
+	["31 -" expr2]
+]
+[litident
+	[lit]
+	[ident]
+]
+[lit ["11"] ["12"] ["13"]]
+[ident ["21"]]
+]
