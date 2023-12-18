@@ -4,26 +4,50 @@ from pyctok import Tokenizer
 import pylrparser
 from pylrparser.parser import Parser
 
+primitives = ["size_t", "char", "uint8_t", "int"]
+consts = ["NULL"]
+keywords = ["typedef", "if"]
+sue = ["struct", "union", "enum"]
+
 def proc_tok(tok):
 	if tok[1] in ",;()[]{}":
 		return (tok[1], tok[1])
-	if tok[0] == 32 and tok[1][-1] == "=":
-		return ("Assign", tok[1])
-	if tok[0] == 32 and tok[1] in "*/%":
-		return ("Mul", tok[1])
-	if tok[0] == 32 and tok[1] in "+-":
-		return ("Add", tok[1])
+	if tok[0] == 32:
+		if tok[1] == "=":
+			return ("=", tok[1])
+		elif tok[1] in ["*", "/", "%"]:
+			return ("Mul", tok[1])
+		elif tok[1] in ["+", "-"]:
+			return ("Add", tok[1])
+		elif tok[1] in ["<", "<=", ">", ">="]:
+			return ("Relation", tok[1])
+		elif tok[1] in ["==", "!="]:
+			return ("Eqneq", tok[1])
+		elif tok[1][-1] == "=":
+			return ("Opassign", tok[1])
 	match tok:
+		case (33, "*"):
+			return ("*", "*")
+		case (31, x):
+			return ("Prefix", x)
 		case (32, "->"):
 			return ("Member", "->")
 		case (32, "."):
 			return ("Member", ".")
-		case (32, "."):
-			return ("Member", ".")
-		case (31, "*"):
-			return ("Deref", "*")
 		case (21, x):
-			return ("Var", x)
+			if "_" in x or x in consts:
+				return ("Var", x)
+			else:
+				return ("Type", x)
+		case (22, x):
+			if x in primitives:
+				return ("Type", x)
+			elif x in sue:
+				return ("Sue", x)
+			elif x in keywords:
+				return (x.capitalize(), x)
+			else:
+				return ("Var", x)
 		case (11, x):
 			return ("Num", x)
 		case (12, x):
@@ -45,8 +69,10 @@ def t(j):
 			return t(j[1])
 		case ".":
 			return s(j[1])
-		case "add" | "divmod" | "assign" | "member":
+		case "add" | "divmod" | "assign":
 			return [s(j[2]), t(j[1]), t(j[3])]
+		case "member":
+			return [s(j[2]), t(j[1]), s(j[3])]
 		case "call":
 			return [t(j[1]), t(j[3])]
 		case "params":
@@ -62,7 +88,13 @@ def t(j):
 		case "defun":
 			return t(j[1]) + [t(j[2])]
 		case "declare":
-			return [t(j[1]), t(j[2])]
+			return [s(j[1]), t(j[2])]
+		case "deref":
+			return ["*", t(j[2])]
+		case "array":
+			return ["@", t(j[1]), t(j[3])]
+		case "addr":
+			return ["&", t(j[2])]
 		case "fun":
 			return [t(j[1]), t(j[3])]
 		case "dparams":

@@ -1,6 +1,19 @@
 [
 [S
+	[+ blocks]
+]
+[blocks
+	[+ block]
+	[blocks block blocks]
+]
+[block
 	[+ defun]
+	[+ typedef]
+]
+[typedef
+	[typedef "Typedef" declare ";"]
+	[typedef_noncamel "Typedef" "Var" "Type" ";"]
+	[typedef_noncamel "Typedef" "Sue" "Var" "Type" ";"]
 ]
 [defun
 	[defun declare procedure]
@@ -10,18 +23,32 @@
 	[dparams declare "," dparams]
 ]
 [declare
-	[declare var dbody]
+	[declare type dbody]
 ]
+
+# cast type
+[ctype
+	[. "Type"]
+]
+
+# primitive type
+[type
+	[sue "Sue" "Type"]
+	[. "Type"]
+]
+
+
 [dbody
 	[+ dbody2]
-	[ptr "Deref" dbody2]
+	[ptr "*" dbody]
 ]
 [dbody2
 	[+ dbody3]
-	[fun dbody3 "(" dparams ")"]
+	[fun dbody2 "(" dparams ")"]
+	[array dbody2 "[" lit "]"]
 ]
 [dbody3
-	[+ var]
+	[. "Var"]
 	[paren "(" dbody ")"]
 ]
 [procedure
@@ -33,16 +60,28 @@
 ]
 [stmt
 	[+ expr ";"]
+	[+ declare ";"]
+	[decinit declare "=" expr ";"]
+	[if "If" "(" expr ")" procedure]
 ]
 [expr
 	[+ expr14]
 ]
 [expr14
 	[+ expr12]
-	[assign expr14 "Assign" expr12]
+	[assign expr14 "Opassign" expr12]
+	[assign expr14 "=" expr12]
 ]
 [expr12
+	[+ expr7]
+]
+[expr7
+	[+ expr6]
+	[relation expr7 "Eqneq" expr6]
+]
+[expr6
 	[+ expr4]
+	[relation expr6 "Relation" expr4]
 ]
 [expr4
 	[+ expr3]
@@ -50,33 +89,33 @@
 ]
 [expr3
 	[+ expr2]
-	[mul expr3 "Mul" expr2]
+	[mul expr3 "Divmod" expr2]
+	[mul expr3 "*" expr2]
 ]
 [expr2
 	[+ expr1]
-	[prefix expr2 "Prefix" expr1]
+	[deref "*" expr1]
+	[addr "Prefix" expr1]
+	[cast "(" ctype ")" expr1]
 ]
 [expr1
 	[+ lit]
 	[paren "(" expr ")"]
 	[index expr1 "[" expr "]"]
 	[call expr1 "(" params ")"]
-	[member expr1 "Member" var]
+	[member expr1 "Member" "Var"]
 ]
 [params
-	[params. expr]
+	[params.]
 	[params expr "," params]
 ]
 [lit
 	[+ clit]
-	[+ var]
+	[. "Var"]
 ]
 [clit
 	[. "Num"]
 	[str "Str"]
 	[char "Char"]
-]
-[var
-	[. "Var"]
 ]
 ]
