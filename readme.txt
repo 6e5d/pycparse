@@ -5,3 +5,15 @@ A lot of restrictions are applied(without harming expressivity though):
 typedef of simple types ([struct/union/enum] T) is the only exception.
 
 * all procedures must be surrounded by braces(avoid dangling else)
+
+* ?: and ,(as operator) are not allowed
+
+* static variable is not allowed
+
+* global variable is not allowed
+
+* only use // comment, only as independent line
+
+* multiline string(backslash) is not allowed. use `"str1"\n"str2"`
+
+* always use parenthese for sizeof

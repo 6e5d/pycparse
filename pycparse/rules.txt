@@ -3,119 +3,186 @@
 	[+ blocks]
 ]
 [blocks
-	[+ block]
-	[blocks block blocks]
+	[!]
+	[blocks blocks block]
 ]
 [block
-	[+ defun]
-	[+ typedef]
+	[+ Defun]
+	[+ Typedef]
 ]
-[typedef
-	[typedef "Typedef" declare ";"]
-	[typedef_noncamel "Typedef" "Var" "Type" ";"]
-	[typedef_noncamel "Typedef" "Sue" "Var" "Type" ";"]
+[Typedef
+	[typedef "typedef" Declare ";"]
+	[typedef_nc "typedef" "var" "type" ";"]
+	[typedef_ncs "typedef" "sue" "var" "type" ";"]
 ]
-[defun
-	[defun declare procedure]
+[Defun
+	[defun Declare Procedure]
 ]
-[dparams
-	[dparams. declare]
-	[dparams declare "," dparams]
+[Dparams
+	[! "void"]
+	[dparams. Declare]
+	[dparams Dparams "," Declare]
 ]
-[declare
-	[declare type dbody]
+[Declare
+	[declare Ptype Dbody]
+	[declare_static "static" Ptype Dbody]
 ]
-
-# cast type
-[ctype
-	[. "Type"]
+[Stmtdec
+	[declare Ptype StmtdecBodys]
+]
+[StmtdecBodys
+	[stmtdec_bodys. StmtdecBody]
+	[stmtdec_bodys StmtdecBodys "," StmtdecBody]
+]
+[StmtdecBody
+	[+ Dbody]
+	[decinit Dbody "=" Initval]
 ]
 
 # primitive type
-[type
-	[sue "Sue" "Type"]
-	[. "Type"]
+[Ptype
+	[sue "sue" "type"]
+	[. "type"]
+	[. "void"]
 ]
 
+[Type
+	[type Ptype Tbody]
+]
+[Tbody
+	[+ Tbody2]
+	[ptr "*" Tbody]
+]
+[Tbody2
+	[!]
+	[+ Tbody3]
+	[fun Tbody3 "(" Dparams ")"]
+	[array Tbody2 "[" Lit "]"]
+]
+[Tbody3
+	[paren "(" Tbody ")"]
+]
 
-[dbody
-	[+ dbody2]
-	[ptr "*" dbody]
+[Dbody
+	[+ Dbody2]
+	[ptr "*" Dbody]
 ]
-[dbody2
-	[+ dbody3]
-	[fun dbody2 "(" dparams ")"]
-	[array dbody2 "[" lit "]"]
+[Dbody2
+	[+ Dbody3]
+	[fun Dbody2 "(" Dparams ")"]
+	[array Dbody2 "[" Lit "]"]
 ]
-[dbody3
-	[. "Var"]
-	[paren "(" dbody ")"]
+[Dbody3
+	[. "var"]
+	[paren "(" Dbody ")"]
 ]
-[procedure
-	[begin "{" stmts "}"]
+[Procedure
+	[begin "{" Stmts "}"]
 ]
-[stmts
-	[stmts. stmt]
-	[stmts stmt stmts]
+[Stmts
+	[!]
+	[stmts Stmts Stmt]
 ]
-[stmt
-	[+ expr ";"]
-	[+ declare ";"]
-	[decinit declare "=" expr ";"]
-	[if "If" "(" expr ")" procedure]
+[Stmt
+	[+ Stmt2 ";"]
+	[+ If]
+	[return "return" Expr ";"]
+	[returnvoid "return" ";"]
+	[continue "continue" ";"]
+	[break "break" ";"]
+	[while "while" "(" Expr ")" Procedure]
+	[for "for" "(" Stmt2 ";" Stmt2 ";" Stmt2 ")" Procedure]
 ]
-[expr
-	[+ expr14]
+[If
+	[if "if" "(" Expr ")" Procedure Ifcont]
 ]
-[expr14
-	[+ expr12]
-	[assign expr14 "Opassign" expr12]
-	[assign expr14 "=" expr12]
+[Ifcont
+	[!]
+	[elif "else" If]
+	[else "else" Procedure]
 ]
-[expr12
-	[+ expr7]
+# Stmt that can appear in for
+[Stmt2
+	[!]
+	[+ Expr]
+	[+ Stmtdec]
 ]
-[expr7
-	[+ expr6]
-	[relation expr7 "Eqneq" expr6]
+[Initval
+	[+ Expr]
+	[initval "{" Sinits "}"]
+	[initval "{" Sinits "," "}"]
 ]
-[expr6
-	[+ expr4]
-	[relation expr6 "Relation" expr4]
+[Sinits
+	[sinits. Sinit]
+	[sinits Sinits "," Sinit]
 ]
-[expr4
-	[+ expr3]
-	[add expr4 "Add" expr3]
+[Sinit
+	[+ Initval]
+	[sinit "member" "var" "=" Initval]
 ]
-[expr3
-	[+ expr2]
-	[mul expr3 "Divmod" expr2]
-	[mul expr3 "*" expr2]
+[Expr
+	[+ Expr14]
 ]
-[expr2
-	[+ expr1]
-	[deref "*" expr1]
-	[addr "Prefix" expr1]
-	[cast "(" ctype ")" expr1]
+[Expr14
+	[+ Expr12]
+	[assign Expr14 "opassign" Expr12]
+	[assign Expr14 "=" Expr12]
 ]
-[expr1
-	[+ lit]
-	[paren "(" expr ")"]
-	[index expr1 "[" expr "]"]
-	[call expr1 "(" params ")"]
-	[member expr1 "Member" "Var"]
+[Expr12
+	[+ Expr11]
+	[binop Expr12 "||" Expr11]
+]
+[Expr11
+	[+ Expr7]
+	[binop Expr11 "&&" Expr7]
+]
+[Expr7
+	[+ Expr6]
+	[binop Expr7 "eqneq" Expr6]
+]
+[Expr6
+	[+ Expr4]
+	[binop Expr6 "relation" Expr4]
+]
+[Expr4
+	[+ Expr3]
+	[binop Expr4 "add" Expr3]
+]
+[Expr3
+	[+ Expr2]
+	[binop Expr3 "divmod" Expr2]
+	[binop Expr3 "*" Expr2]
+]
+[Expr2
+	[+ Expr1]
+	[deref "*" Expr1]
+	[addr "prefix" Expr1]
+	[cast "(" Type ")" Expr1]
+]
+[Expr1
+	[+ Lit]
+	[paren "(" Expr ")"]
+	[index Expr1 "[" Expr "]"]
+	[callvoid Expr1 "(" ")"]
+	[call Expr1 "(" params ")"]
+	[sizeof "sizeof" "(" Type ")"]
+	[member Expr1 "member" "var"]
 ]
 [params
-	[params.]
-	[params expr "," params]
+	[params. Expr]
+	[params params "," Expr]
 ]
-[lit
-	[+ clit]
-	[. "Var"]
+[Lit
+	[+ Clit]
+	[. "var"]
 ]
-[clit
-	[. "Num"]
-	[str "Str"]
-	[char "Char"]
+[Clit
+	[. "num"]
+	[strlit Strcat]
+	[char "char"]
+]
+[Strcat
+	[strcat. "str"]
+	[strcat Strcat "str"]
 ]
 ]

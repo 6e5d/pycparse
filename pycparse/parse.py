@@ -2,58 +2,67 @@ from pathlib import Path
 
 from pyctok import Tokenizer
 import pylrparser
-from pylrparser.parser import Parser
+from pylrparser.parser import cached_parser
 
-primitives = ["size_t", "char", "uint8_t", "int"]
+primitives = ["size_t",
+	"uint8_t", "uint32_t", "uint64_t",
+	"int8_t", "int32_t", "int64_t",
+	"int", "long", "float", "double", "char", "bool"
+]
 consts = ["NULL"]
-keywords = ["typedef", "if"]
+keywords = ["typedef", "if", "else", "for", "while",
+	"void", "return", "sizeof", "continue", "break", "static"]
 sue = ["struct", "union", "enum"]
 
 def proc_tok(tok):
-	if tok[1] in ",;()[]{}":
+	if tok[1] in [
+		",", ";",
+		"(", ")",
+		"[", "]",
+		"{", "}",
+		"||", "&&",
+	] + keywords:
 		return (tok[1], tok[1])
 	if tok[0] == 32:
 		if tok[1] == "=":
 			return ("=", tok[1])
-		elif tok[1] in ["*", "/", "%"]:
-			return ("Mul", tok[1])
+		elif tok[1] in ["/", "%"]:
+			return ("divmod", tok[1])
 		elif tok[1] in ["+", "-"]:
-			return ("Add", tok[1])
+			return ("add", tok[1])
 		elif tok[1] in ["<", "<=", ">", ">="]:
-			return ("Relation", tok[1])
+			return ("relation", tok[1])
 		elif tok[1] in ["==", "!="]:
-			return ("Eqneq", tok[1])
+			return ("eqneq", tok[1])
 		elif tok[1][-1] == "=":
-			return ("Opassign", tok[1])
+			return ("opassign", tok[1])
 	match tok:
 		case (33, "*"):
 			return ("*", "*")
 		case (31, x):
-			return ("Prefix", x)
+			return ("prefix", x)
 		case (32, "->"):
-			return ("Member", "->")
+			return ("member", "->")
 		case (32, "."):
-			return ("Member", ".")
+			return ("member", ".")
 		case (21, x):
 			if "_" in x or x in consts:
-				return ("Var", x)
+				return ("var", x)
 			else:
-				return ("Type", x)
+				return ("type", x)
 		case (22, x):
 			if x in primitives:
-				return ("Type", x)
+				return ("type", x)
 			elif x in sue:
-				return ("Sue", x)
-			elif x in keywords:
-				return (x.capitalize(), x)
+				return ("sue", x)
 			else:
-				return ("Var", x)
+				return ("var", x)
 		case (11, x):
-			return ("Num", x)
+			return ("num", x)
 		case (12, x):
-			return ("Str", x)
+			return ("str", x)
 		case (13, x):
-			return ("Char", x)
+			return ("char", x)
 		case x:
 			raise Exception(x)
 
@@ -69,28 +78,78 @@ def t(j):
 			return t(j[1])
 		case ".":
 			return s(j[1])
-		case "add" | "divmod" | "assign":
+		case "binop" | "assign":
 			return [s(j[2]), t(j[1]), t(j[3])]
+		case "initval":
+			return t(j[2])
+		case "return":
+			return ["return", t(j[2])]
+		case "sizeof":
+			return ["sizeof", t(j[3])]
+		case "returnvoid":
+			return ["return"]
+		case "continue":
+			return ["continue"]
+		case "break":
+			return ["break"]
+		case "!":
+			return []
+		case "blocks":
+			return t(j[1]) + [t(j[2])]
 		case "member":
 			return [s(j[2]), t(j[1]), s(j[3])]
+		case "cast":
+			return ["as", t(j[2]), t(j[4])]
 		case "call":
 			return [t(j[1]), t(j[3])]
+		case "callvoid":
+			return [t(j[1]), []]
 		case "params":
-			return [t(j[1])] + t(j[3])
+			return t(j[1]) + [t(j[3])]
 		case "params.":
 			return [t(j[1])]
 		case "begin":
 			return ["begin"] + t(j[2])
+		case "if":
+			return ["if", t(j[3]), t(j[5])]
+		case "for":
+			return ["for", [
+				t(j[3]), t(j[5]), t(j[7])
+			], t(j[9])]
+		case "while":
+			return ["while", t(j[3]), t(j[5])]
 		case "stmts":
-			return [t(j[1])] + t(j[2])
-		case "stmts.":
+			return t(j[1]) + [t(j[2])]
+		case "type":
+			return [t(j[1]), t(j[2])]
+		case "stmtdec_bodys":
+			return t(j[1]) + [t(j[3])]
+		case "stmtdec_bodys.":
 			return [t(j[1])]
 		case "defun":
 			return t(j[1]) + [t(j[2])]
 		case "declare":
-			return [s(j[1]), t(j[2])]
+			return [t(j[1]), t(j[2])]
+		case "declare_static":
+			return ["static", t(j[2]), t(j[3])]
+		case "sval":
+			return t(j[2])
+		case "sinits":
+			return t(j[1]) + [t(j[3])]
+		case "sinits.":
+			return [t(j[1])]
+		case "sinit":
+			return [s(j[2]), t(j[4])]
+		case "sval0":
+			return "0"
+		case "decinit":
+			return ["init", t(j[1]), t(j[3])]
 		case "deref":
 			return ["*", t(j[2])]
+		case "sdbodys":
+			return t(j[1]) + [t(j[3])]
+		case "sdbodys.":
+			return [t(j[1])]
 		case "array":
 			return ["@", t(j[1]), t(j[3])]
 		case "addr":
@@ -107,10 +166,18 @@ def t(j):
 			return ["*", t(j[2])]
 		case "paren":
 			return t(j[2])
+		case "typedef_nc":
+			return ["typedef", j[1], j[2]]
+		case "typedef_ncs":
+			return ["typedef", j[1], j[2], j[3]]
 		case "index":
 			return ["@", t(j[1]), t(j[3])]
-		case "str":
-			return f'"{j[1]}"'
+		case "strlit":
+			return f'"{t(j[1])}"'
+		case "strcat.":
+			return j[1]
+		case "strcat":
+			return t(j[1]) + j[2]
 		case "char":
 			return f"'{j[1]}'"
 		case x:
@@ -125,7 +192,8 @@ def parse_string(s):
 		sym, orig = proc_tok(tok)
 		syms.append(sym)
 		origs.append(orig)
-	rule_string = open(Path(__file__).parent / "rules.txt").read()
-	parser = Parser(rule_string)
+	src = Path(__file__).parent / "rules.txt"
+	cached = Path(__file__).parent / "rules.json"
+	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
 	return t(j)
