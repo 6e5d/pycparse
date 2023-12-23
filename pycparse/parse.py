@@ -1,8 +1,10 @@
+import sys
 from pathlib import Path
 
 from pyctok import Tokenizer
 import pylrparser
 from pylrparser.parser import cached_parser
+from . import preprocess
 
 primitives = ["size_t",
 	"uint8_t", "uint32_t", "uint64_t",
@@ -39,6 +41,12 @@ def proc_tok(tok):
 	match tok:
 		case (33, "*"):
 			return ("*", "*")
+		case (31, "&"):
+			return ("prefix", "*p")
+		case (31, "-"):
+			return ("prefix", "-n")
+		case (31, "+"):
+			return ("prefix", "+n")
 		case (31, x):
 			return ("prefix", x)
 		case (32, "->"):
@@ -81,7 +89,7 @@ def t(j):
 		case "binop" | "assign":
 			return [s(j[2]), t(j[1]), t(j[3])]
 		case "initval":
-			return t(j[2])
+			return ["initval", t(j[2])]
 		case "return":
 			return ["return", t(j[2])]
 		case "sizeof":
@@ -99,11 +107,11 @@ def t(j):
 		case "member":
 			return [s(j[2]), t(j[1]), s(j[3])]
 		case "cast":
-			return ["as", t(j[2]), t(j[4])]
+			return ["cast", t(j[4]), t(j[2])]
 		case "call":
-			return [t(j[1]), t(j[3])]
+			return ["apply", t(j[1]), t(j[3])]
 		case "callvoid":
-			return [t(j[1]), []]
+			return ["apply", t(j[1]), []]
 		case "params":
 			return t(j[1]) + [t(j[3])]
 		case "params.":
@@ -111,7 +119,11 @@ def t(j):
 		case "begin":
 			return ["begin"] + t(j[2])
 		case "if":
-			return ["if", t(j[3]), t(j[5])]
+			return ["if", t(j[3]), t(j[5]), t(j[6])]
+		case "elif":
+			return ["elif", t(j[2])]
+		case "else":
+			return ["else", t(j[2])]
 		case "for":
 			return ["for", [
 				t(j[3]), t(j[5]), t(j[7])
@@ -121,17 +133,19 @@ def t(j):
 		case "stmts":
 			return t(j[1]) + [t(j[2])]
 		case "type":
-			return [t(j[1]), t(j[2])]
+			return ["type", t(j[1]), t(j[2])]
 		case "stmtdec_bodys":
 			return t(j[1]) + [t(j[3])]
 		case "stmtdec_bodys.":
 			return [t(j[1])]
+		case "decfun":
+			return ["decfun"] + t(j[1])
 		case "defun":
-			return t(j[1]) + [t(j[2])]
+			return ["defun"] + t(j[1]) + [t(j[2])]
+		case "defun_static":
+			return ["static"] + t(j[2]) + [t(j[3])]
 		case "declare":
-			return [t(j[1]), t(j[2])]
-		case "declare_static":
-			return ["static", t(j[2]), t(j[3])]
+			return ["declare", t(j[1]), t(j[2])]
 		case "sval":
 			return t(j[2])
 		case "sinits":
@@ -143,19 +157,19 @@ def t(j):
 		case "sval0":
 			return "0"
 		case "decinit":
-			return ["init", t(j[1]), t(j[3])]
-		case "deref":
-			return ["*", t(j[2])]
+			return ["decinit", t(j[1]), t(j[3])]
 		case "sdbodys":
 			return t(j[1]) + [t(j[3])]
 		case "sdbodys.":
 			return [t(j[1])]
 		case "array":
 			return ["@", t(j[1]), t(j[3])]
-		case "addr":
-			return ["&", t(j[2])]
-		case "fun":
-			return [t(j[1]), t(j[3])]
+		case "prefix":
+			return [j[1], t(j[2])]
+		case "*p":
+			return ["*p", t(j[2])]
+		case "arg":
+			return ["arg", t(j[1]), t(j[3])]
 		case "dparams":
 			return t(j[1]) + [t(j[3])]
 		case "dparams.":
@@ -163,13 +177,13 @@ def t(j):
 		case "simple":
 			return [t(j[1]), t(j[2])]
 		case "ptr":
-			return ["*", t(j[2])]
+			return ["ptr", t(j[2])]
 		case "paren":
 			return t(j[2])
 		case "typedef_nc":
-			return ["typedef", j[1], j[2]]
+			return ["typedef", j[2], j[3]]
 		case "typedef_ncs":
-			return ["typedef", j[1], j[2], j[3]]
+			return ["typedef", j[2], j[3], j[4]]
 		case "index":
 			return ["@", t(j[1]), t(j[3])]
 		case "strlit":
@@ -184,6 +198,10 @@ def t(j):
 			raise Exception(j[0])
 
 def parse_string(s):
+	lines = [line for line in s.split("\n")]
+	lines, includes, defines = preprocess(lines)
+	s = "\n".join(lines)
+
 	tok = Tokenizer()
 	tok.tokenize(s)
 	syms = []
@@ -196,4 +214,4 @@ def parse_string(s):
 	cached = Path(__file__).parent / "rules.json"
 	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
-	return t(j)
+	return (t(j), includes, defines)

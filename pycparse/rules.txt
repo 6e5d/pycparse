@@ -16,7 +16,9 @@
 	[typedef_ncs "typedef" "sue" "var" "type" ";"]
 ]
 [Defun
+	[decfun Declare ";"]
 	[defun Declare Procedure]
+	[defun_static "static" Declare Procedure]
 ]
 [Dparams
 	[! "void"]
@@ -25,7 +27,6 @@
 ]
 [Declare
 	[declare Ptype Dbody]
-	[declare_static "static" Ptype Dbody]
 ]
 [Stmtdec
 	[declare Ptype StmtdecBodys]
@@ -56,7 +57,7 @@
 [Tbody2
 	[!]
 	[+ Tbody3]
-	[fun Tbody3 "(" Dparams ")"]
+	[arg Tbody3 "(" Dparams ")"]
 	[array Tbody2 "[" Lit "]"]
 ]
 [Tbody3
@@ -69,7 +70,7 @@
 ]
 [Dbody2
 	[+ Dbody3]
-	[fun Dbody2 "(" Dparams ")"]
+	[arg Dbody2 "(" Dparams ")"]
 	[array Dbody2 "[" Lit "]"]
 ]
 [Dbody3
@@ -92,6 +93,7 @@
 	[break "break" ";"]
 	[while "while" "(" Expr ")" Procedure]
 	[for "for" "(" Stmt2 ";" Stmt2 ";" Stmt2 ")" Procedure]
+	[+ Procedure]
 ]
 [If
 	[if "if" "(" Expr ")" Procedure Ifcont]
@@ -155,8 +157,8 @@
 ]
 [Expr2
 	[+ Expr1]
-	[deref "*" Expr1]
-	[addr "prefix" Expr1]
+	[*p "*" Expr1]
+	[prefix "prefix" Expr1]
 	[cast "(" Type ")" Expr1]
 ]
 [Expr1
