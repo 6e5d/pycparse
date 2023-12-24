@@ -12,7 +12,7 @@
 ]
 [Typedef
 	[typedef "typedef" Declare ";"]
-	[typedef_su "typedef" "sue" "{" Declares "}" "type" ";"]
+	[typedef_su "typedef" "sue" "{" Declares "}" nstype ";"]
 	[alias "typedef" "var" "type" ";"]
 	[alias_su "typedef" "sue" "var" "type" ";"]
 ]
@@ -44,8 +44,8 @@
 
 # primitive type
 [Ptype
-	[sue "sue" "type"]
-	[. "type"]
+	[sue "sue" nstype]
+	[+ nstype]
 	[. "void"]
 ]
 
@@ -76,7 +76,7 @@
 	[array Dbody2 "[" Lit "]"]
 ]
 [Dbody3
-	[. "var"]
+	[+ nsvar]
 	[paren "(" Dbody ")"]
 ]
 [Procedure
@@ -182,7 +182,15 @@
 ]
 [Lit
 	[+ Clit]
+	[+ nsvar]
+]
+[nsvar
 	[. "var"]
+	[ns_name "NS_NAME" "(" "var" ")"]
+]
+[nstype
+	[. "type"]
+	[ns_type "NS_TYPE" "(" "type" ")"]
 ]
 [Clit
 	[numeric "num"]

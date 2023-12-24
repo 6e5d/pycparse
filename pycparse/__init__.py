@@ -6,6 +6,7 @@ def preprocess(lines):
 	lines2 = []
 	includes = []
 	defines = dict()
+	ns = [None, None]
 	for line in lines:
 		line = line.rstrip("\n")
 		if not line:
@@ -25,9 +26,20 @@ def preprocess(lines):
 				print("skip define", sp)
 				continue
 			symbol, string = sp
+			if symbol.startswith("NS_NAME("):
+				sp2 = string.split("##")
+				assert len(sp2) == 2
+				ns[0] = sp2[0]
+				continue
+			if symbol.startswith("NS_TYPE("):
+				sp2 = string.split("##")
+				assert len(sp2) == 2
+				ns[1] = sp2[0]
+				continue
 			defines[symbol] = string
 			continue
 		if line1.startswith("#"):
 			continue
 		lines2.append(line)
-	return lines2, includes, defines
+		assert ns[0] != None
+	return lines2, includes, defines, ns

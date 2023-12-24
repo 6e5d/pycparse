@@ -13,7 +13,8 @@ primitives = ["size_t",
 ]
 consts = ["NULL"]
 keywords = ["typedef", "if", "else", "for", "while",
-	"void", "return", "sizeof", "continue", "break", "static"]
+	"void", "return", "sizeof", "continue", "break", "static",
+	"NS_TYPE", "NS_NAME"]
 sue = ["struct", "union", "enum"]
 
 def proc_tok(tok):
@@ -136,6 +137,10 @@ def t(j):
 			return ["stmtdec", t(j[1]), t(j[2])]
 		case "stmts":
 			return t(j[1]) + [t(j[2])]
+		case "ns_type":
+			return ["ns_type", s(j[3])]
+		case "ns_name":
+			return ["ns_name", s(j[3])]
 		case "type":
 			return ["type", t(j[1]), t(j[2])]
 		case "stmtdec_bodys":
@@ -185,7 +190,7 @@ def t(j):
 		case "paren":
 			return t(j[2])
 		case "typedef_su":
-			return ["typedef_su", s(j[2]), t(j[4]), s(j[6])]
+			return ["typedef_su", s(j[2]), t(j[4]), t(j[6])]
 		case "typedef_camelize":
 			return ["typedef_camelize", s(j[2]), s(j[3])]
 		case "typedef_camelize_su":
@@ -217,7 +222,7 @@ def t(j):
 
 def parse_string(s):
 	lines = [line for line in s.split("\n")]
-	lines, includes, defines = preprocess(lines)
+	lines, includes, defines, ns = preprocess(lines)
 	s = "\n".join(lines)
 
 	tok = Tokenizer()
@@ -232,4 +237,4 @@ def parse_string(s):
 	cached = Path(__file__).parent /  "rules.json"
 	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
-	return (t(j), includes, defines)
+	return (t(j), includes, defines, ns)
