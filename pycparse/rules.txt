@@ -12,8 +12,13 @@
 ]
 [Typedef
 	[typedef "typedef" Declare ";"]
-	[typedef_nc "typedef" "var" "type" ";"]
-	[typedef_ncs "typedef" "sue" "var" "type" ";"]
+	[typedef_su "typedef" "sue" "{" Declares "}" "type" ";"]
+	[alias "typedef" "var" "type" ";"]
+	[alias_su "typedef" "sue" "var" "type" ";"]
+]
+[Declares
+	[declares. Declare ";"]
+	[declares Declares ";" Declare]
 ]
 [Defun
 	[decfun Declare ";"]
@@ -27,9 +32,6 @@
 ]
 [Declare
 	[declare Ptype Dbody]
-]
-[Stmtdec
-	[declare Ptype StmtdecBodys]
 ]
 [StmtdecBodys
 	[stmtdec_bodys. StmtdecBody]
@@ -103,16 +105,20 @@
 	[elif "else" If]
 	[else "else" Procedure]
 ]
-# Stmt that can appear in for
+# Stmt that can appear in for's first block
 [Stmt2
+	[stmtexpr Stmt3]
+	[stmtdec Ptype StmtdecBodys]
+]
+# Stmt that can appear in for's second/third block
+[Stmt3
 	[!]
 	[+ Expr]
-	[+ Stmtdec]
 ]
 [Initval
 	[+ Expr]
-	[initval "{" Sinits "}"]
-	[initval "{" Sinits "," "}"]
+	[braceinit "{" Sinits "}"]
+	[braceinit "{" Sinits "," "}"]
 ]
 [Sinits
 	[sinits. Sinit]
@@ -179,7 +185,7 @@
 	[. "var"]
 ]
 [Clit
-	[. "num"]
+	[numeric "num"]
 	[strlit Strcat]
 	[char "char"]
 ]

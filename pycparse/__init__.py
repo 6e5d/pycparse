@@ -19,9 +19,15 @@ def preprocess(lines):
 			continue
 		if line1.startswith("#define"):
 			# support 2 types of define: num, simple typedef
-			define = line1.removeprefix("#include").strip()
-			symbol, string = define.split(" ", 1)
+			define = line1.removeprefix("#define").strip()
+			sp = define.split(" ", 1)
+			if len(sp) != 2:
+				print("skip define", sp)
+				continue
+			symbol, string = sp
 			defines[symbol] = string
+			continue
+		if line1.startswith("#"):
 			continue
 		lines2.append(line)
 	return lines2, includes, defines

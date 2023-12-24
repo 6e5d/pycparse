@@ -42,7 +42,7 @@ def proc_tok(tok):
 		case (33, "*"):
 			return ("*", "*")
 		case (31, "&"):
-			return ("prefix", "*p")
+			return ("prefix", "&p")
 		case (31, "-"):
 			return ("prefix", "-n")
 		case (31, "+"):
@@ -88,8 +88,8 @@ def t(j):
 			return s(j[1])
 		case "binop" | "assign":
 			return [s(j[2]), t(j[1]), t(j[3])]
-		case "initval":
-			return ["initval", t(j[2])]
+		case "braceinit":
+			return ["braceinit", t(j[2])]
 		case "return":
 			return ["return", t(j[2])]
 		case "sizeof":
@@ -130,6 +130,10 @@ def t(j):
 			], t(j[9])]
 		case "while":
 			return ["while", t(j[3]), t(j[5])]
+		case "stmtexpr":
+			return ["stmtexpr", t(j[1])]
+		case "stmtdec":
+			return ["stmtdec", t(j[1]), t(j[2])]
 		case "stmts":
 			return t(j[1]) + [t(j[2])]
 		case "type":
@@ -180,20 +184,34 @@ def t(j):
 			return ["ptr", t(j[2])]
 		case "paren":
 			return t(j[2])
-		case "typedef_nc":
-			return ["typedef", j[2], j[3]]
-		case "typedef_ncs":
-			return ["typedef", j[2], j[3], j[4]]
+		case "typedef_su":
+			return ["typedef_su", s(j[2]), t(j[4]), s(j[6])]
+		case "typedef_camelize":
+			return ["typedef_camelize", s(j[2]), s(j[3])]
+		case "typedef_camelize_su":
+			return ["typedef_camelize_su", s(j[2]), s(j[3]), s(j[4])]
+		case "declares.":
+			return [t(j[1])]
+		case "declares":
+			return t[j[1]] + [t(j[3])]
 		case "index":
 			return ["@", t(j[1]), t(j[3])]
+		case "numeric":
+			lit = s(j[1])
+			if "." in lit:
+				if lit.endswith("f"):
+					return ["lit", "float", lit]
+				else:
+					return ["lit", "double", lit]
+			return ["lit", "int", lit]
 		case "strlit":
-			return f'"{t(j[1])}"'
+			return ["lit", "str", t(j[1])]
 		case "strcat.":
-			return j[1]
+			return s(j[1])
 		case "strcat":
-			return t(j[1]) + j[2]
+			return t(j[1]) + s(j[2])
 		case "char":
-			return f"'{j[1]}'"
+			return ["lit", "char", s(j[1])]
 		case x:
 			raise Exception(j[0])
 
@@ -211,7 +229,7 @@ def parse_string(s):
 		syms.append(sym)
 		origs.append(orig)
 	src = Path(__file__).parent / "rules.txt"
-	cached = Path(__file__).parent / "rules.json"
+	cached = Path(__file__).parent /  "rules.json"
 	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
 	return (t(j), includes, defines)
