@@ -1,20 +1,18 @@
 [
 [S
-	[+ blocks]
+	[+ Blocks]
 ]
-[blocks
+[Blocks
 	[!]
-	[blocks blocks block]
+	[blocks Blocks Block]
 ]
-[block
+[Block
 	[+ Defun]
 	[+ Typedef]
 ]
 [Typedef
 	[typedef "typedef" Declare ";"]
-	[typedef_su "typedef" "sue" "{" Declares "}" nstype ";"]
-	[alias "typedef" "var" "type" ";"]
-	[alias_su "typedef" "sue" "var" "type" ";"]
+	[typedef_su "typedef" "sue" "{" Declares "}" Nstype ";"]
 ]
 [Declares
 	[declares. Declare ";"]
@@ -44,8 +42,8 @@
 
 # primitive type
 [Ptype
-	[sue "sue" nstype]
-	[+ nstype]
+	[sue "sue" Nstype]
+	[+ Nstype]
 	[. "void"]
 ]
 
@@ -76,7 +74,7 @@
 	[array Dbody2 "[" Lit "]"]
 ]
 [Dbody3
-	[+ nsvar]
+	[+ Nsvar]
 	[paren "(" Dbody ")"]
 ]
 [Procedure
@@ -172,23 +170,23 @@
 	[paren "(" Expr ")"]
 	[index Expr1 "[" Expr "]"]
 	[callvoid Expr1 "(" ")"]
-	[call Expr1 "(" params ")"]
+	[call Expr1 "(" Params ")"]
 	[sizeof "sizeof" "(" Type ")"]
 	[member Expr1 "member" "var"]
 ]
-[params
+[Params
 	[params. Expr]
-	[params params "," Expr]
+	[params Params "," Expr]
 ]
 [Lit
 	[+ Clit]
-	[+ nsvar]
+	[+ Nsvar]
 ]
-[nsvar
+[Nsvar
 	[. "var"]
 	[ns_name "NS_NAME" "(" "var" ")"]
 ]
-[nstype
+[Nstype
 	[. "type"]
 	[ns_type "NS_TYPE" "(" "type" ")"]
 ]
