@@ -4,17 +4,15 @@ from pathlib import Path
 from pyctok import Tokenizer
 import pylrparser
 from pylrparser.parser import cached_parser
-from . import preprocess
+from .preprocessor import Preprocessor
 
 primitives = ["size_t",
 	"uint8_t", "uint32_t", "uint64_t",
 	"int8_t", "int32_t", "int64_t",
-	"int", "long", "float", "double", "char", "bool"
-]
+	"int", "long", "float", "double", "char", "bool"]
 consts = ["NULL"]
 keywords = ["typedef", "if", "else", "for", "while",
-	"void", "return", "sizeof", "continue", "break", "static",
-	"NS_TYPE", "NS_NAME"]
+	"void", "return", "sizeof", "continue", "break", "static"]
 sue = ["struct", "union", "enum"]
 
 def proc_tok(tok):
@@ -24,24 +22,26 @@ def proc_tok(tok):
 		"[", "]",
 		"{", "}",
 		"||", "&&",
+		"|", "&", "^",
+		",", "*",
 	] + keywords:
 		return (tok[1], tok[1])
 	if tok[0] == 32:
 		if tok[1] == "=":
 			return ("=", tok[1])
+		elif tok[1][-1] == "=":
+			return ("opassign", tok[1])
 		elif tok[1] in ["/", "%"]:
 			return ("divmod", tok[1])
 		elif tok[1] in ["+", "-"]:
 			return ("add", tok[1])
 		elif tok[1] in ["<", "<=", ">", ">="]:
 			return ("relation", tok[1])
+		elif tok[1] in ["<<", ">>"]:
+			return ("bitshift", tok[1])
 		elif tok[1] in ["==", "!="]:
 			return ("eqneq", tok[1])
-		elif tok[1][-1] == "=":
-			return ("opassign", tok[1])
 	match tok:
-		case (33, "*"):
-			return ("*", "*")
 		case (31, "&"):
 			return ("prefix", "&p")
 		case (31, "-"):
@@ -55,7 +55,7 @@ def proc_tok(tok):
 		case (32, "."):
 			return ("member", ".")
 		case (21, x):
-			if "_" in x or x in consts:
+			if x[0].islower() or x in consts:
 				return ("var", x)
 			else:
 				return ("type", x)
@@ -175,6 +175,8 @@ def t(j):
 			return ["@", t(j[1]), t(j[3])]
 		case "prefix":
 			return [j[1], t(j[2])]
+		case "&p":
+			return ["&p", t(j[2])]
 		case "*p":
 			return ["*p", t(j[2])]
 		case "arg":
@@ -220,11 +222,21 @@ def t(j):
 		case x:
 			raise Exception(j[0])
 
+def alias(j, table):
+	if isinstance(j, str):
+		if j in table:
+			return table[j]
+		return j
+	for idx, jj in enumerate(j):
+		j[idx] = alias(jj, table)
+	return j
+
 def parse_string(s):
 	lines = [line for line in s.split("\n")]
-	lines, includes, defines, ns = preprocess(lines)
-	s = "\n".join(lines)
+	pp = Preprocessor()
+	lines = pp.preprocess(lines)
 
+	s = "\n".join(lines)
 	tok = Tokenizer()
 	tok.tokenize(s)
 	syms = []
@@ -237,4 +249,6 @@ def parse_string(s):
 	cached = Path(__file__).parent /  "rules.json"
 	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
-	return (t(j), includes, defines, ns)
+	j = t(j)
+	j = alias(j, pp.alias)
+	return (j, pp.includes)

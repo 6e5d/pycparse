@@ -1,19 +1,19 @@
 I am trying to implement C parser within pure LR(1).
-A lot of restrictions are applied(without harming expressivity though):
+I want to find a balance point:
+support C11 syntax as much as I can, while still stay in CFG.
 
-* types must be CamelCase, var must be snake_case,
-typedef of simple types ([struct/union/enum] T) is the only exception.
+Currently limitations:
 
-* all procedures must be surrounded by braces(avoid dangling else)
+* identifier is type iff starts with upper case letter,
 
-* ?: and ,(as operator) are not allowed
+* typedef not allowed(use defines)
 
-* static variable is not allowed
+* struct/union definition must be top level block and must use typedef syntax.
 
-* global variable is not allowed
+* enum not allowed
 
-* only use // comment, only as independent line
+* comma(Expr15) not allowed in
+init declare(x = {a, (b, c), d}) and
+function call(Params directly goto Expr14)
 
-* multiline string(backslash) is not allowed. use `"str1"\n"str2"`
-
-* always use parenthese for sizeof
+* a very restricted preprocessing

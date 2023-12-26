@@ -12,7 +12,7 @@
 ]
 [Typedef
 	[typedef "typedef" Declare ";"]
-	[typedef_su "typedef" "sue" "{" Declares "}" Nstype ";"]
+	[typedef_su "typedef" "sue" "{" Declares "}" "type" ";"]
 ]
 [Declares
 	[declares. Declare ";"]
@@ -42,8 +42,8 @@
 
 # primitive type
 [Ptype
-	[sue "sue" Nstype]
-	[+ Nstype]
+	[sue "sue" "type"]
+	[. "type"]
 	[. "void"]
 ]
 
@@ -74,7 +74,7 @@
 	[array Dbody2 "[" Lit "]"]
 ]
 [Dbody3
-	[+ Nsvar]
+	[. "var"]
 	[paren "(" Dbody ")"]
 ]
 [Procedure
@@ -114,7 +114,7 @@
 	[+ Expr]
 ]
 [Initval
-	[+ Expr]
+	[+ Expr14]
 	[braceinit "{" Sinits "}"]
 	[braceinit "{" Sinits "," "}"]
 ]
@@ -127,20 +127,36 @@
 	[sinit "member" "var" "=" Initval]
 ]
 [Expr
+	[+ Expr15]
+]
+[Expr15
 	[+ Expr14]
+	[comma Expr15 "," Expr14]
 ]
 [Expr14
 	[+ Expr12]
-	[assign Expr14 "opassign" Expr12]
-	[assign Expr14 "=" Expr12]
+	[assign Expr12 "opassign" Expr14]
+	[assign Expr12 "=" Expr14]
 ]
 [Expr12
 	[+ Expr11]
 	[binop Expr12 "||" Expr11]
 ]
 [Expr11
+	[+ Expr10]
+	[binop Expr11 "&&" Expr10]
+]
+[Expr10
+	[+ Expr9]
+	[binop Expr10 "|" Expr9]
+]
+[Expr9
+	[+ Expr8]
+	[binop Expr9 "^" Expr8]
+]
+[Expr8
 	[+ Expr7]
-	[binop Expr11 "&&" Expr7]
+	[binop Expr8 "&" Expr7]
 ]
 [Expr7
 	[+ Expr6]
@@ -149,6 +165,10 @@
 [Expr6
 	[+ Expr4]
 	[binop Expr6 "relation" Expr4]
+]
+[Expr5
+	[+ Expr4]
+	[binop Expr5 "bitshift" Expr4]
 ]
 [Expr4
 	[+ Expr3]
@@ -161,6 +181,7 @@
 ]
 [Expr2
 	[+ Expr1]
+	[&p "&" Expr1]
 	[*p "*" Expr1]
 	[prefix "prefix" Expr1]
 	[cast "(" Type ")" Expr1]
@@ -175,20 +196,12 @@
 	[member Expr1 "member" "var"]
 ]
 [Params
-	[params. Expr]
-	[params Params "," Expr]
+	[params. Expr14]
+	[params Params "," Expr14]
 ]
 [Lit
 	[+ Clit]
-	[+ Nsvar]
-]
-[Nsvar
 	[. "var"]
-	[ns_name "NS_NAME" "(" "var" ")"]
-]
-[Nstype
-	[. "type"]
-	[ns_type "NS_TYPE" "(" "type" ")"]
 ]
 [Clit
 	[numeric "num"]
