@@ -16,7 +16,7 @@
 ]
 [Declares
 	[declares. Declare ";"]
-	[declares Declares ";" Declare]
+	[declares Declare ";" Declares]
 ]
 [Defun
 	[decfun Declare ";"]
@@ -36,8 +36,9 @@
 	[stmtdec_bodys StmtdecBodys "," StmtdecBody]
 ]
 [StmtdecBody
-	[+ Dbody]
-	[decinit Dbody "=" Initval]
+	[var Dbody]
+	[set Dbody "=" Expr14]
+	[sets Dbody "=" Sval]
 ]
 
 # primitive type
@@ -92,7 +93,7 @@
 	[continue "continue" ";"]
 	[break "break" ";"]
 	[while "while" "(" Expr ")" Procedure]
-	[for "for" "(" Stmt2 ";" Stmt2 ";" Stmt2 ")" Procedure]
+	[for "for" "(" Stmt2 ";" Stmt3 ";" Stmt3 ")" Procedure]
 	[+ Procedure]
 ]
 [If
@@ -105,26 +106,13 @@
 ]
 # Stmt that can appear in for's first block
 [Stmt2
-	[stmtexpr Stmt3]
+	[+ Stmt3]
 	[stmtdec Ptype StmtdecBodys]
 ]
 # Stmt that can appear in for's second/third block
 [Stmt3
 	[!]
-	[+ Expr]
-]
-[Initval
-	[+ Expr14]
-	[braceinit "{" Sinits "}"]
-	[braceinit "{" Sinits "," "}"]
-]
-[Sinits
-	[sinits. Sinit]
-	[sinits Sinits "," Sinit]
-]
-[Sinit
-	[+ Initval]
-	[sinit "member" "var" "=" Initval]
+	[stmtexpr Expr]
 ]
 [Expr
 	[+ Expr15]
@@ -163,8 +151,8 @@
 	[binop Expr7 "eqneq" Expr6]
 ]
 [Expr6
-	[+ Expr4]
-	[binop Expr6 "relation" Expr4]
+	[+ Expr5]
+	[binop Expr6 "relation" Expr5]
 ]
 [Expr5
 	[+ Expr4]
@@ -181,10 +169,11 @@
 ]
 [Expr2
 	[+ Expr1]
-	[&p "&" Expr1]
-	[*p "*" Expr1]
-	[prefix "prefix" Expr1]
-	[cast "(" Type ")" Expr1]
+	[&p "&" Expr2]
+	[*p "*" Expr2]
+	[prefix "prefix" Expr2]
+	[cast "(" Type ")" Expr2]
+	[sval "(" Type ")" Sval]
 ]
 [Expr1
 	[+ Lit]
@@ -202,6 +191,23 @@
 [Lit
 	[+ Clit]
 	[. "var"]
+]
+[Sval
+	[brace_a "{" MemberA "}"]
+	[brace_a "{" MemberA "," "}"]
+	[brace_s "{" MemberS "}"]
+	[brace_s "{" MemberS "," "}"]
+]
+[MemberA
+	[member_a. Expr14]
+	[member_a MemberA "," Expr14]
+]
+[MemberS
+	[member_s. Designated]
+	[member_s MemberS "," Designated]
+]
+[Designated
+	[designated "member" "var" "=" Expr14]
 ]
 [Clit
 	[numeric "num"]

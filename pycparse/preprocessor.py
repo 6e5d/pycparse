@@ -1,3 +1,6 @@
+from buildc.depinfo import Depinfo
+from buildc.build import nsdef
+
 class Ppfunc:
 	def __init__(self, params, body):
 		self.params = params
@@ -6,12 +9,23 @@ class Ppfunc:
 # limitation: preprocessing are all treated like they are placed to top
 # only support plain define + simple function with concat
 class Preprocessor:
-	def __init__(self):
+	def __init__(self, proj):
 		self.includes = []
 		# ident -> (Ppfunc | str)
 		self.immediates = dict()
 		self.alias = dict()
 		self.content = []
+		depinfo = Depinfo()
+		depinfo.build(proj)
+		name, camel, snake = nsdef(proj)
+		self.nsmacro(name, camel, snake)
+		for path in depinfo.deps:
+			name, camel, snake = nsdef(path)
+			self.nsmacro(name, camel, snake)
+	def nsmacro(self, name, camel, snake):
+		self.directive(f"#define {name}(ident) {snake}_##ident")
+		self.directive(f"#define {name.capitalize()}(ident) "
+			f"{camel}##ident")
 	def directive(self, line):
 		if line.startswith("#include"):
 			file = line.removeprefix("#include").strip()

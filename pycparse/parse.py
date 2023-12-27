@@ -89,14 +89,12 @@ def t(j):
 			return s(j[1])
 		case "binop" | "assign":
 			return [s(j[2]), t(j[1]), t(j[3])]
-		case "braceinit":
-			return ["braceinit", t(j[2])]
 		case "return":
 			return ["return", t(j[2])]
 		case "sizeof":
 			return ["sizeof", t(j[3])]
 		case "returnvoid":
-			return ["return"]
+			return ["returnvoid"]
 		case "continue":
 			return ["continue"]
 		case "break":
@@ -108,7 +106,7 @@ def t(j):
 		case "member":
 			return [s(j[2]), t(j[1]), s(j[3])]
 		case "cast":
-			return ["cast", t(j[4]), t(j[2])]
+			return ["cast", t(j[2]), t(j[4])]
 		case "call":
 			return ["apply", t(j[1]), t(j[3])]
 		case "callvoid":
@@ -132,15 +130,11 @@ def t(j):
 		case "while":
 			return ["while", t(j[3]), t(j[5])]
 		case "stmtexpr":
-			return ["stmtexpr", t(j[1])]
+			return ["expr", t(j[1])]
 		case "stmtdec":
 			return ["stmtdec", t(j[1]), t(j[2])]
 		case "stmts":
 			return t(j[1]) + [t(j[2])]
-		case "ns_type":
-			return ["ns_type", s(j[3])]
-		case "ns_name":
-			return ["ns_name", s(j[3])]
 		case "type":
 			return ["type", t(j[1]), t(j[2])]
 		case "stmtdec_bodys":
@@ -155,22 +149,25 @@ def t(j):
 			return ["static"] + t(j[2]) + [t(j[3])]
 		case "declare":
 			return ["declare", t(j[1]), t(j[2])]
-		case "sval":
-			return t(j[2])
-		case "sinits":
-			return t(j[1]) + [t(j[3])]
-		case "sinits.":
+		case "member_s.":
 			return [t(j[1])]
-		case "sinit":
+		case "member_s":
+			return t(j[1]) + [t(j[3])]
+		case "member_a.":
+			return [t(j[1])]
+		case "member_a":
+			return t(j[1]) + [t(j[3])]
+		case "designated":
 			return [s(j[2]), t(j[4])]
-		case "sval0":
-			return "0"
-		case "decinit":
-			return ["decinit", t(j[1]), t(j[3])]
-		case "sdbodys":
-			return t(j[1]) + [t(j[3])]
-		case "sdbodys.":
-			return [t(j[1])]
+		case "sval":
+			assert len(j) == 5
+			return ["casts", t(j[2]), t(j[4][2])]
+		case "var":
+			return ["var", t(j[1])]
+		case "set":
+			return ["set", t(j[1]), t(j[3])]
+		case "sets":
+			return ["sets", t(j[1]), t(j[3])]
 		case "array":
 			return ["@", t(j[1]), t(j[3])]
 		case "prefix":
@@ -192,7 +189,7 @@ def t(j):
 		case "paren":
 			return t(j[2])
 		case "typedef_su":
-			return ["typedef_su", s(j[2]), t(j[4]), t(j[6])]
+			return ["typedef_su", s(j[2]), t(j[4]), s(j[6])]
 		case "typedef_camelize":
 			return ["typedef_camelize", s(j[2]), s(j[3])]
 		case "typedef_camelize_su":
@@ -200,7 +197,7 @@ def t(j):
 		case "declares.":
 			return [t(j[1])]
 		case "declares":
-			return t[j[1]] + [t(j[3])]
+			return [t(j[1])] + t(j[3])
 		case "index":
 			return ["@", t(j[1]), t(j[3])]
 		case "numeric":
@@ -219,6 +216,8 @@ def t(j):
 			return t(j[1]) + s(j[2])
 		case "char":
 			return ["lit", "char", s(j[1])]
+		case "comma":
+			return [",", t(j[1]), t(j[3])]
 		case x:
 			raise Exception(j[0])
 
@@ -231,9 +230,9 @@ def alias(j, table):
 		j[idx] = alias(jj, table)
 	return j
 
-def parse_string(s):
+def parse_string(s, proj):
 	lines = [line for line in s.split("\n")]
-	pp = Preprocessor()
+	pp = Preprocessor(proj)
 	lines = pp.preprocess(lines)
 
 	s = "\n".join(lines)
