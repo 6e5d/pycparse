@@ -143,6 +143,10 @@ def t(j):
 			return ["static"] + t(j[2]) + [t(j[3])]
 		case "declare":
 			return ["declare", t(j[1]), t(j[2])]
+		case "brace_a":
+			return t(j[2])
+		case "brace_s":
+			return t(j[2])
 		case "member_s.":
 			return [t(j[1])]
 		case "member_s":
@@ -163,15 +167,13 @@ def t(j):
 		case "sets":
 			return ["sets", t(j[1]), t(j[3])]
 		case "array":
-			return ["@", t(j[1]), t(j[3])]
+			return ["Array", t(j[1]), t(j[3])]
 		case "prefix":
 			return [j[1], t(j[2])]
 		case "&p":
 			return ["&p", t(j[2])]
 		case "*p":
 			return ["*p", t(j[2])]
-		case "arg":
-			return ["arg", t(j[1]), t(j[3])]
 		case "dparams":
 			return t(j[1]) + [t(j[3])]
 		case "dparams.":
@@ -179,7 +181,11 @@ def t(j):
 		case "simple":
 			return [t(j[1]), t(j[2])]
 		case "ptr":
-			return ["ptr", t(j[2])]
+			return ["Ptr", t(j[2])]
+		case "arg":
+			return ["Arg", t(j[1]), t(j[3])]
+		case "sue":
+			return [s(j[1]).capitalize(), s(j[2])]
 		case "paren":
 			return t(j[2])
 		case "typedef_su":
@@ -215,18 +221,21 @@ def t(j):
 		case x:
 			raise Exception(j[0])
 
-def alias(j, table):
+def alias_recurse(j, table):
 	if isinstance(j, str):
 		if j in table:
 			return table[j]
 		return j
 	for idx, jj in enumerate(j):
-		j[idx] = alias(jj, table)
+		j[idx] = alias_recurse(jj, table)
 	return j
 
-def parse_string(s, proj):
+# the alias is prepend to the preprocessor
+# this is for first parsing the header
+# then use type aliases defined in header in source file
+def parse_string(s, proj, alias = dict()):
 	lines = [line for line in s.split("\n")]
-	pp = Preprocessor(proj)
+	pp = Preprocessor(proj, alias)
 	lines = pp.preprocess(lines)
 
 	s = "\n".join(lines)
@@ -243,5 +252,5 @@ def parse_string(s, proj):
 	parser = cached_parser(src, cached)
 	j = parser.parse(syms, origs)
 	j = t(j)
-	j = alias(j, pp.alias)
-	return (j, pp.includes)
+	j = alias_recurse(j, pp.alias)
+	return (j, pp.includes, pp.alias)

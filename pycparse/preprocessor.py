@@ -9,11 +9,11 @@ class Ppfunc:
 # limitation: preprocessing are all treated like they are placed to top
 # only support plain define + simple function with concat
 class Preprocessor:
-	def __init__(self, proj):
+	def __init__(self, proj, alias):
 		self.includes = []
 		# ident -> (Ppfunc | str)
 		self.immediates = dict()
-		self.alias = dict()
+		self.alias = alias
 		self.content = []
 		depinfo = Depinfo()
 		depinfo.build(proj)
@@ -55,6 +55,8 @@ class Preprocessor:
 			if string[0].isnumeric():
 				self.immediates[symbol] = string
 			else:
+				# primitive only
+				assert " " not in string
 				self.alias[symbol] = string
 			return
 		raise Exception(line)
@@ -70,6 +72,7 @@ class Preprocessor:
 		if after and after[0].isalnum():
 			return False
 		if isinstance(rule, Ppfunc) and (not after or after[0] != "("):
+			print(rule, sym, rule)
 			raise Exception(line)
 		# now it is a valid substitute
 		if isinstance(rule, str):
