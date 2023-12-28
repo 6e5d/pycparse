@@ -182,7 +182,7 @@
 	[callvoid Expr1 "(" ")"]
 	[call Expr1 "(" Params ")"]
 	[sizeof "sizeof" "(" Type ")"]
-	[member Expr1 "member" "var"]
+	[field Expr1 "field" "var"]
 ]
 [Params
 	[params. Expr14]
@@ -207,7 +207,7 @@
 	[member_s MemberS "," Designated]
 ]
 [Designated
-	[designated "member" "var" "=" Expr14]
+	[designated "field" "var" "=" Expr14]
 ]
 [Clit
 	[numeric "num"]

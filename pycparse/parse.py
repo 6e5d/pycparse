@@ -5,14 +5,8 @@ from pyctok import Tokenizer
 import pylrparser
 from pylrparser.parser import cached_parser
 from .preprocessor import Preprocessor
+from pycdb import btypes, keywords, consts
 
-primitives = ["size_t",
-	"uint8_t", "uint32_t", "uint64_t",
-	"int8_t", "int32_t", "int64_t",
-	"int", "long", "float", "double", "char", "bool"]
-consts = ["NULL"]
-keywords = ["typedef", "if", "else", "for", "while",
-	"void", "return", "sizeof", "continue", "break", "static"]
 sue = ["struct", "union", "enum"]
 
 def proc_tok(tok):
@@ -51,16 +45,16 @@ def proc_tok(tok):
 		case (31, x):
 			return ("prefix", x)
 		case (32, "->"):
-			return ("member", "->")
+			return ("field", "->")
 		case (32, "."):
-			return ("member", ".")
+			return ("field", ".")
 		case (21, x):
 			if x[0].islower() or x in consts:
 				return ("var", x)
 			else:
 				return ("type", x)
 		case (22, x):
-			if x in primitives:
+			if x in btypes:
 				return ("type", x)
 			elif x in sue:
 				return ("sue", x)
@@ -103,7 +97,7 @@ def t(j):
 			return []
 		case "blocks":
 			return t(j[1]) + [t(j[2])]
-		case "member":
+		case "field":
 			return [s(j[2]), t(j[1]), s(j[3])]
 		case "cast":
 			return ["cast", t(j[2]), t(j[4])]
