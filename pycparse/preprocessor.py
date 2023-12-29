@@ -44,7 +44,7 @@ class Preprocessor:
 				head, body = name.split("(")
 				args = [sp.strip()
 					for sp in body.split(",")]
-				self.immediates[head.strip()] =\
+				self.immediates[head.strip() + "("] =\
 					Ppfunc(args, rule.strip())
 				return
 			sp = define.split(" ", 1)
@@ -68,12 +68,13 @@ class Preprocessor:
 		before = line[:offset]
 		if before and before[-1].isalnum():
 			return False
-		after = line[offset + len(sym):]
+		if isinstance(rule, Ppfunc):
+			# exclude (
+			after = line[offset + len(sym) - 1:]
+		else:
+			after = line[offset + len(sym):]
 		if after and after[0].isalnum():
 			return False
-		if isinstance(rule, Ppfunc) and (not after or after[0] != "("):
-			print(rule, sym, rule)
-			raise Exception(line)
 		# now it is a valid substitute
 		if isinstance(rule, str):
 			return before + rule + after
@@ -92,9 +93,13 @@ class Preprocessor:
 		output = []
 		for ln, line in enumerate(self.content):
 			for sym, rule in self.immediates.items():
-				ret = self.proc_line_rule(line, sym, rule)
-				if ret != False:
-					line = ret
+				while True:
+					ret = self.proc_line_rule(
+						line, sym, rule)
+					if ret != False:
+						line = ret
+					else:
+						break
 			output.append(line)
 		return output
 	def preprocess(self, lines):

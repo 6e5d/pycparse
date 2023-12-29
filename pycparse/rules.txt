@@ -24,7 +24,7 @@
 	[defun_static "static" Declare Procedure]
 ]
 [Dparams
-	[! "void"]
+	[dvoid "type"]
 	[dparams. Declare]
 	[dparams Dparams "," Declare]
 ]
@@ -59,7 +59,7 @@
 	[!]
 	[+ Tbody3]
 	[arg Tbody3 "(" Dparams ")"]
-	[array Tbody2 "[" Lit "]"]
+	[array Tbody2 "[" "num" "]"]
 ]
 [Tbody3
 	[paren "(" Tbody ")"]
@@ -72,7 +72,7 @@
 [Dbody2
 	[+ Dbody3]
 	[arg Dbody2 "(" Dparams ")"]
-	[array Dbody2 "[" Lit "]"]
+	[array Dbody2 "[" "num" "]"]
 ]
 [Dbody3
 	[. "var"]
@@ -88,6 +88,7 @@
 [Stmt
 	[+ Stmt2 ";"]
 	[+ If]
+	[+ Switch]
 	[return "return" Expr ";"]
 	[returnvoid "return" ";"]
 	[continue "continue" ";"]
@@ -95,6 +96,17 @@
 	[while "while" "(" Expr ")" Procedure]
 	[for "for" "(" Stmt2 ";" Stmt3 ";" Stmt3 ")" Procedure]
 	[+ Procedure]
+]
+[Switch
+	[switch "switch" "(" Expr ")" "{" Cases "}" ]
+]
+[Cases
+	[cases. Case]
+	[cases Cases Case]
+]
+[Case
+	[case "case" Expr ":" Stmt]
+	[default "default" ":" Stmt]
 ]
 [If
 	[if "if" "(" Expr ")" Procedure Ifcont]
@@ -173,7 +185,7 @@
 	[*p "*" Expr2]
 	[prefix "prefix" Expr2]
 	[cast "(" Type ")" Expr2]
-	[sval "(" Type ")" Sval]
+	[casts "(" Type ")" Sval]
 ]
 [Expr1
 	[+ Lit]
@@ -200,7 +212,9 @@
 ]
 [MemberA
 	[member_a. Expr14]
+	[member_a. Sval]
 	[member_a MemberA "," Expr14]
+	[member_a MemberA "," Sval]
 ]
 [MemberS
 	[member_s. Designated]
@@ -208,6 +222,7 @@
 ]
 [Designated
 	[designated "field" "var" "=" Expr14]
+	[designated "field" "var" "=" Sval]
 ]
 [Clit
 	[numeric "num"]
