@@ -9,7 +9,8 @@ class Ppfunc:
 # limitation: preprocessing are all treated like they are placed to top
 # only support plain define + simple function with concat
 class Preprocessor:
-	def __init__(self, proj, alias):
+	def __init__(self, proj, file, alias):
+		self.file = file # for __file__ macro
 		self.includes = []
 		# ident -> (Ppfunc | str)
 		self.immediates = dict()
@@ -92,6 +93,12 @@ class Preprocessor:
 	def proc_content(self):
 		output = []
 		for ln, line in enumerate(self.content):
+			idx = line.find("__FILE__")
+			if idx >= 0:
+				# NOTE: path requires C-style escape/unescape
+				# but i am too lazy to handle it..
+				line = line[:idx] + '"' +\
+					self.file + '"' + line[idx + 8:]
 			for sym, rule in self.immediates.items():
 				while True:
 					ret = self.proc_line_rule(
@@ -110,8 +117,12 @@ class Preprocessor:
 			if not line:
 				continue
 			line = line.lstrip("\t")
-			if line.startswith("//"):
-				continue
+			idx = line.find("//")
+			if idx >= 0:
+				if idx == 0:
+					continue
+				if '"' not in line[idx:]:
+					line = line[:idx]
 			if line.startswith("#"):
 				self.directive(line)
 			else:

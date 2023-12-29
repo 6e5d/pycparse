@@ -58,6 +58,14 @@ def proc_tok(tok):
 			if x[0].islower():
 				return ("var", x)
 			else:
+				# F_x is type
+				# FxX is type
+				# F_X is var(const)
+				idx = x.find("_")
+				if idx == -1:
+					return ("type", x)
+				elif x[idx + 1].isupper():
+					return ("var", x)
 				return ("type", x)
 		case (22, x):
 			return ("var", x)
@@ -263,9 +271,9 @@ def parse_string(s):
 # the alias is prepend to the preprocessor
 # this is for first parsing the header
 # then use type aliases defined in header in source file
-def parse_project_file(s, proj, alias = dict()):
-	lines = [line for line in s.split("\n")]
-	pp = Preprocessor(proj, alias)
+def parse_project_file(file, proj, alias = dict()):
+	lines = [line for line in open(file)]
+	pp = Preprocessor(proj, file, alias)
 	lines = pp.preprocess(lines)
 	s = "\n".join(lines)
 	j = parse_string(s)
