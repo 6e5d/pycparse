@@ -10,6 +10,14 @@ from pycdb import btypes, keywords, consts
 sue = ["struct", "union", "enum"]
 
 def proc_tok(tok):
+	# literals should not be interpreted
+	match tok:
+		case (11, x):
+			return ("num", x)
+		case (12, x):
+			return ("str", x)
+		case (13, x):
+			return ("char", x)
 	if tok[1] in btypes:
 		return ("type", tok[1])
 	if tok[1] in sue:
@@ -69,12 +77,6 @@ def proc_tok(tok):
 				return ("type", x)
 		case (22, x):
 			return ("var", x)
-		case (11, x):
-			return ("num", x)
-		case (12, x):
-			return ("str", x)
-		case (13, x):
-			return ("char", x)
 		case x:
 			raise Exception(x)
 
@@ -148,8 +150,6 @@ def t(j):
 			return ["stmtdec", t(j[1]), t(j[2])]
 		case "stmts":
 			return t(j[1]) + [t(j[2])]
-		case "type":
-			return ["type", t(j[1]), t(j[2])]
 		case "stmtdec_bodys":
 			return t(j[1]) + [t(j[3])]
 		case "stmtdec_bodys.":

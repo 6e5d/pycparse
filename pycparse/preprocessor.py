@@ -1,15 +1,23 @@
 from buildc.depinfo import Depinfo
-from buildc.build import nsdef
+from gid import path2gid, gid2c
 
 class Ppfunc:
 	def __init__(self, params, body):
 		self.params = params
 		self.body = body
 
+def nsdef(proj):
+	gid = path2gid(proj)
+	name = gid[-1]
+	camel = gid2c(gid, "camel")
+	snake = gid2c(gid, "snake")
+	return name, camel, snake
+
 # limitation: preprocessing are all treated like they are placed to top
 # only support plain define + simple function with concat
 class Preprocessor:
 	def __init__(self, proj, file, alias):
+		assert isinstance(file, str)
 		self.file = file # for __file__ macro
 		self.includes = []
 		# ident -> (Ppfunc | str)

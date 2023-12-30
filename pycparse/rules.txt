@@ -24,7 +24,6 @@
 	[defun_static "static" Declare Procedure]
 ]
 [Dparams
-	[dvoid "type"]
 	[dparams. Declare]
 	[dparams Dparams "," Declare]
 ]
@@ -45,24 +44,6 @@
 [Ptype
 	[sue "sue" "type"]
 	[. "type"]
-	[. "void"]
-]
-
-[Type
-	[type Ptype Tbody]
-]
-[Tbody
-	[+ Tbody2]
-	[ptr "*" Tbody]
-]
-[Tbody2
-	[!]
-	[+ Tbody3]
-	[arg Tbody3 "(" Dparams ")"]
-	[array Tbody2 "[" "num" "]"]
-]
-[Tbody3
-	[paren "(" Tbody ")"]
 ]
 
 [Dbody
@@ -70,8 +51,9 @@
 	[ptr "*" Dbody]
 ]
 [Dbody2
+	[!]
 	[+ Dbody3]
-	[arg Dbody2 "(" Dparams ")"]
+	[arg Dbody3 "(" Dparams ")"]
 	[array Dbody2 "[" "num" "]"]
 ]
 [Dbody3
@@ -184,8 +166,8 @@
 	[&p "&" Expr2]
 	[*p "*" Expr2]
 	[prefix "prefix" Expr2]
-	[cast "(" Type ")" Expr2]
-	[casts "(" Type ")" Sval]
+	[cast "(" Declare ")" Expr2]
+	[casts "(" Declare ")" Sval]
 ]
 [Expr1
 	[+ Lit]
@@ -193,7 +175,7 @@
 	[index Expr1 "[" Expr "]"]
 	[callvoid Expr1 "(" ")"]
 	[call Expr1 "(" Params ")"]
-	[sizeof "sizeof" "(" Type ")"]
+	[sizeof "sizeof" "(" Declare ")"]
 	[field Expr1 "field" "var"]
 ]
 [Params
