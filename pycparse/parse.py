@@ -175,7 +175,7 @@ def t(j):
 		case "sets":
 			return ["sets", t(j[1]), t(j[3])]
 		case "array":
-			return ["Array", t(j[1]), s(j[3])]
+			return ["Array", t(j[1]), t(j[3])]
 		case "prefix":
 			return [j[1], t(j[2])]
 		case "&p":

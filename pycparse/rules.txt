@@ -55,7 +55,7 @@
 	[!]
 	[+ Dbody3]
 	[arg Dbody3 "(" Dparams ")"]
-	[array Dbody2 "[" "num" "]"]
+	[array Dbody2 "[" Lit "]"]
 ]
 [Dbody3
 	[. "var"]
