@@ -1,10 +1,8 @@
 import sys
 from pathlib import Path
 
-from pyctok import Tokenizer
 import pylrparser
 from pylrparser.parser import cached_parser
-from .preprocessor import Preprocessor
 from pycdb import btypes, keywords, consts
 
 sue = ["struct", "union", "enum"]
@@ -63,18 +61,7 @@ def proc_tok(tok):
 		case (32, "."):
 			return ("field", ".")
 		case (21, x):
-			if x[0].islower():
-				return ("var", x)
-			else:
-				# F_x is type
-				# FxX is type
-				# F_X is var(const)
-				idx = x.find("_")
-				if idx == -1:
-					return ("type", x)
-				elif x[idx + 1].isupper():
-					return ("var", x)
-				return ("type", x)
+			return ("type", x)
 		case (22, x):
 			return ("var", x)
 		case x:
@@ -156,6 +143,8 @@ def t(j):
 			return [t(j[1])]
 		case "decfun":
 			return ["decfun"] + t(j[1])
+		case "const":
+			return ["const", t(j[3]), s(j[4]), t(j[6])]
 		case "defun":
 			return ["defun"] + t(j[1]) + [t(j[2])]
 		case "defun_static":
@@ -243,21 +232,10 @@ def t(j):
 		case x:
 			raise Exception(j[0])
 
-def alias_recurse(j, table):
-	if isinstance(j, str):
-		if j in table:
-			return table[j]
-		return j
-	for idx, jj in enumerate(j):
-		j[idx] = alias_recurse(jj, table)
-	return j
-
-def parse_string(s):
-	tok = Tokenizer()
-	tok.tokenize(s)
+def parse_toks(toks):
 	syms = []
 	origs = []
-	for tok in tok.toks:
+	for tok in toks:
 		sym, orig = proc_tok(tok)
 		syms.append(sym)
 		origs.append(orig)
@@ -267,15 +245,3 @@ def parse_string(s):
 	j = parser.parse(syms, origs)
 	j = t(j)
 	return j
-
-# the alias is prepend to the preprocessor
-# this is for first parsing the header
-# then use type aliases defined in header in source file
-def parse_project_file(file, proj, alias = dict()):
-	lines = [line for line in open(file)]
-	pp = Preprocessor(proj, file, alias)
-	lines = pp.preprocess(lines)
-	s = "\n".join(lines)
-	j = parse_string(s)
-	j = alias_recurse(j, pp.alias)
-	return (j, pp.includes, pp.alias)

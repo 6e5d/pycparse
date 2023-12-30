@@ -9,6 +9,7 @@
 [Block
 	[+ Defun]
 	[+ Typedef]
+	[const "const" "static" Ptype "var" "=" Expr ";"]
 ]
 [Typedef
 	[typedef "typedef" Declare ";"]

@@ -16,6 +16,4 @@ Currently limitations:
 init declare(x = {a, (b, c), d}) and
 function call(Params directly goto Expr14)
 
-* a very restricted preprocessing
-
 * struct init only use designated
